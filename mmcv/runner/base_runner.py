@@ -2,6 +2,7 @@
 import copy
 import logging
 import os.path as osp
+import time
 import warnings
 from abc import ABCMeta, abstractmethod
 
@@ -304,7 +305,11 @@ class BaseRunner(metaclass=ABCMeta):
                 "before_train_epoch".
         """
         for hook in self._hooks:
+            hook_sig = f'{hook.__class__.__name__}-{fn_name}-time'
+            tik = time.time()
             getattr(hook, fn_name)(self)
+            tok = time.time()
+            self.log_buffer.update({hook_sig: tok - tik})
 
     def get_hook_info(self):
         # Get hooks info in each stage
