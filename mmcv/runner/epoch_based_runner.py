@@ -44,12 +44,16 @@ class EpochBasedRunner(BaseRunner):
         self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook('before_train_epoch')
         time.sleep(2)  # Prevent possible deadlock during epoch transition
+        tik = time.time()
         for i, data_batch in enumerate(self.data_loader):
+            tok = time.time()
+            self.log_buffer.update(dict(get_data_time=tok - tik))
             self._inner_iter = i
             self.call_hook('before_train_iter')
             self.run_iter(data_batch, train_mode=True, **kwargs)
             self.call_hook('after_train_iter')
             self._iter += 1
+            tik = time.time()
 
         self.call_hook('after_train_epoch')
         self._epoch += 1
